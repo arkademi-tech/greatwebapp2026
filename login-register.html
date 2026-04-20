@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luna — Login & Register</title>
+<link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root { height: 100%; }
+body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+input { font-family: 'Inter', sans-serif; }
+input:focus { outline: none; }
+button { font-family: 'Inter', sans-serif; cursor: pointer; }
+.fi { line-height: 1 !important; display: inline-flex !important; align-items: center !important; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+// ── Tokens ─────────────────────────────────────────────────────────
+const T = {
+  primary: '#0977BE', primaryHover: '#086cad', primaryLight: '#EEF7FD',
+  navy1: '#02306C', navy2: '#094CA3',
+  n900: '#171E2C', n800: '#323B4D', n700: '#555F71', n600: '#7E8799',
+  n500: '#ABB2C1', n400: '#CBD0DB', n300: '#E2E5EC', n200: '#F0F2F6',
+  n100: '#F7F8FA', white: '#FFFFFF',
+  success: '#14B541', successBg: '#E5FCEA',
+  error: '#FB484B', errorBg: '#FFF3F3',
+  cardShadow: '0px 8px 32px rgba(5,49,96,0.10)',
+};
+
+// ── Logo mark ──────────────────────────────────────────────────────
+const ArkLogo = ({ size = 32, color = T.primary }) => (
+  <svg width={size * 0.88} height={size} viewBox="0 0 37 40" fill={color}>
+    <path d="M10.838 28.535L25.835 28.535L29.174 39.768L36.673 39.768L24.546 1.902C24.194 0.634 23.315 0 21.909 0L14.763 0C13.357 0 12.478 0.634 12.126 1.902L0 39.768L7.499 39.768L10.838 28.535ZM20.035 8.878L24.076 22.596L12.598 22.596L16.638 8.878L17.574 5.476L19.157 5.476C19.195 5.669 19.488 6.803 20.035 8.878Z"/>
+  </svg>
+);
+
+// ── Input Field ────────────────────────────────────────────────────
+const Field = ({ label, type = 'text', placeholder, value, onChange, error, icon, suffix }) => {
+  const [focused, setFocused] = useState(false);
+  const [showPass, setShowPass] = useState(false);
+  const isPass = type === 'password';
+  const inputType = isPass ? (showPass ? 'text' : 'password') : type;
+  const border = error ? T.error : focused ? T.primary : T.n400;
+  const shadow = focused ? `0 0 0 3px ${error ? T.error : T.primary}22` : 'none';
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+      {label && <label style={{ fontSize: 13, fontWeight: 500, color: T.n800 }}>{label}</label>}
+      <div style={{ position: 'relative' }}>
+        {icon && <i className={`fi fi-rr-${icon}`} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 14, color: T.n500, pointerEvents: 'none' }} />}
+        <input
+          type={inputType} placeholder={placeholder} value={value} onChange={onChange}
+          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+          style={{
+            width: '100%', height: 44, borderRadius: 8, border: `1.5px solid ${border}`,
+            boxShadow: shadow, background: T.white,
+            padding: `0 ${isPass ? 44 : 12}px 0 ${icon ? 40 : 12}px`,
+            fontSize: 14, color: T.n900, transition: 'all 150ms',
+          }}
+        />
+        {isPass && (
+          <button type="button" onClick={() => setShowPass(p => !p)}
+            style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: T.n500, display: 'flex', padding: 0 }}>
+            <i className={`fi fi-rr-${showPass ? 'eye' : 'eye-crossed'}`} style={{ fontSize: 16 }} />
+          </button>
+        )}
+        {suffix}
+      </div>
+      {error && <span style={{ fontSize: 12, color: T.error, display: 'flex', alignItems: 'center', gap: 4 }}><i className="fi fi-rr-exclamation" style={{ fontSize: 11 }} />{error}</span>}
+    </div>
+  );
+};
+
+// ── Divider ────────────────────────────────────────────────────────
+const Divider = ({ label }) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '4px 0' }}>
+    <div style={{ flex: 1, height: 1, background: T.n300 }} />
+    {label && <span style={{ fontSize: 12, color: T.n500, whiteSpace: 'nowrap' }}>{label}</span>}
+    <div style={{ flex: 1, height: 1, background: T.n300 }} />
+  </div>
+);
+
+// ── Left panel (decorative) ────────────────────────────────────────
+const LeftPanel = () => (
+  <div style={{
+    flex: 1, background: `linear-gradient(155deg, ${T.navy1} 0%, ${T.navy2} 55%, ${T.primary} 100%)`,
+    display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+    padding: '40px 44px', position: 'relative', overflow: 'hidden', minWidth: 0,
+  }}>
+    {/* Decorative circles */}
+    {[[320, -80, 400], [-60, 200, 300], [200, 500, 250]].map(([x, y, s], i) => (
+      <div key={i} style={{ position: 'absolute', left: x, top: y, width: s, height: s, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', pointerEvents: 'none' }} />
+    ))}
+    <div style={{ position: 'relative' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <ArkLogo size={30} color="#fff" />
+        <span style={{ fontSize: 20, fontWeight: 800, color: '#fff', letterSpacing: '.02em' }}>ARKADEMI</span>
+      </div>
+    </div>
+    <div style={{ position: 'relative' }}>
+      <div style={{ fontSize: 28, fontWeight: 700, color: '#fff', lineHeight: 1.3, marginBottom: 14 }}>
+        Platform Belajar &<br />Rekrutmen Terbaik
+      </div>
+      <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, marginBottom: 32 }}>
+        Bergabung dengan ribuan profesional yang menggunakan Arkademi untuk mengembangkan karier dan menemukan talent terbaik.
+      </div>
+      <div style={{ display: 'flex', gap: 24 }}>
+        {[['500+', 'Kursus'], ['50.000+', 'Pengguna'], ['98%', 'Kepuasan']].map(([v, l]) => (
+          <div key={l}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: '#fff' }}>{v}</div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>{l}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+    <div style={{ position: 'relative' }}>
+      {/* Testimonial card */}
+      <div style={{ background: 'rgba(255,255,255,0.10)', backdropFilter: 'blur(12px)', borderRadius: 14, padding: '16px 20px', border: '1px solid rgba(255,255,255,0.15)' }}>
+        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.9)', lineHeight: 1.6, fontStyle: 'italic', marginBottom: 12 }}>
+          "Arkademi membantu tim HR kami menemukan kandidat yang tepat 3× lebih cepat dengan fitur Luna AI."
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 32, height: 32, borderRadius: '50%', background: T.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: '#fff' }}>R</div>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#fff' }}>Rika Amelia</div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>HR Manager · PT Nusantara Tech</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// ── Login Page ─────────────────────────────────────────────────────
+const LoginPage = ({ onSwitch }) => {
+  const [email, setEmail]   = useState('');
+  const [pass, setPass]     = useState('');
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const validate = () => {
+    const e = {};
+    if (!email)              e.email = 'Email wajib diisi';
+    else if (!/\S+@\S+\.\S+/.test(email)) e.email = 'Format email tidak valid';
+    if (!pass)               e.pass = 'Password wajib diisi';
+    else if (pass.length < 6) e.pass = 'Password minimal 6 karakter';
+    setErrors(e);
+    return !Object.keys(e).length;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+    setLoading(true);
+    setTimeout(() => { setLoading(false); setSuccess(true); }, 1400);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+      <div>
+        <h1 style={{ fontSize: 26, fontWeight: 700, color: T.n900, marginBottom: 6 }}>Selamat Datang Kembali</h1>
+        <p style={{ fontSize: 14, color: T.n600 }}>Masuk ke akun Arkademi Anda</p>
+      </div>
+
+      {success ? (
+        <div style={{ textAlign: 'center', padding: '20px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 56, height: 56, borderRadius: '50%', background: T.successBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <i className="fi fi-rr-check" style={{ fontSize: 24, color: T.success }} />
+          </div>
+          <div style={{ fontSize: 16, fontWeight: 600, color: T.n900 }}>Login Berhasil!</div>
+          <div style={{ fontSize: 13, color: T.n600 }}>Mengalihkan ke dashboard…</div>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <Field label="Email" type="email" placeholder="email@perusahaan.com" icon="envelope"
+            value={email} onChange={e => setEmail(e.target.value)} error={errors.email} />
+          <Field label="Password" type="password" placeholder="Masukkan password" icon="lock"
+            value={pass} onChange={e => setPass(e.target.value)} error={errors.pass} />
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: -6 }}>
+            <span style={{ fontSize: 13, color: T.primary, fontWeight: 500, cursor: 'pointer' }}>Lupa password?</span>
+          </div>
+
+          <button type="submit" disabled={loading} style={{
+            height: 46, borderRadius: 8, background: loading ? T.n400 : T.primary,
+            color: '#fff', fontSize: 15, fontWeight: 600, border: 'none',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            transition: 'background 150ms', marginTop: 4,
+          }}>
+            {loading ? <><i className="fi fi-rr-spinner" style={{ fontSize: 16, animation: 'spin 1s linear infinite' }} /> Memproses…</> : 'Masuk'}
+          </button>
+
+          <Divider label="atau masuk dengan" />
+
+          <div style={{ display: 'flex', gap: 10 }}>
+            {[['google', 'Google'], ['brand-google', 'Microsoft']].map(([ic, label]) => (
+              <button key={label} type="button" style={{
+                flex: 1, height: 42, borderRadius: 8, background: T.white, border: `1.5px solid ${T.n300}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                fontSize: 13, fontWeight: 500, color: T.n800, transition: 'border-color 150ms',
+              }}>
+                <i className={`fi fi-rr-${ic}`} style={{ fontSize: 15, color: T.primary }} /> {label}
+              </button>
+            ))}
+          </div>
+
+          <div style={{ textAlign: 'center', fontSize: 13, color: T.n600, marginTop: 4 }}>
+            Belum punya akun?{' '}
+            <span onClick={onSwitch} style={{ color: T.primary, fontWeight: 600, cursor: 'pointer' }}>Daftar sekarang</span>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+};
+
+// ── Register Page ──────────────────────────────────────────────────
+const RegisterPage = ({ onSwitch }) => {
+  const [form, setForm] = useState({ name: '', email: '', company: '', pass: '', confirm: '', agree: false });
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(1); // 1=form, 2=success
+
+  const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+  const validate = () => {
+    const e = {};
+    if (!form.name.trim())          e.name = 'Nama wajib diisi';
+    if (!form.email)                 e.email = 'Email wajib diisi';
+    else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Format email tidak valid';
+    if (!form.pass)                  e.pass = 'Password wajib diisi';
+    else if (form.pass.length < 8)  e.pass = 'Password minimal 8 karakter';
+    if (form.pass !== form.confirm)  e.confirm = 'Password tidak cocok';
+    if (!form.agree)                 e.agree = 'Anda harus menyetujui syarat & ketentuan';
+    setErrors(e);
+    return !Object.keys(e).length;
+  };
+
+  const handleSubmit = e => {
+    e.preventDefault();
+    if (!validate()) return;
+    setLoading(true);
+    setTimeout(() => { setLoading(false); setStep(2); }, 1400);
+  };
+
+  const passStrength = (() => {
+    const p = form.pass;
+    if (!p) return null;
+    let s = 0;
+    if (p.length >= 8)   s++;
+    if (/[A-Z]/.test(p)) s++;
+    if (/[0-9]/.test(p)) s++;
+    if (/[^A-Za-z0-9]/.test(p)) s++;
+    return s;
+  })();
+  const strengthLabel = [null, 'Lemah', 'Cukup', 'Baik', 'Kuat'];
+  const strengthColor = [null, T.error, '#FFAE00', T.primary, T.success];
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div>
+        <h1 style={{ fontSize: 26, fontWeight: 700, color: T.n900, marginBottom: 6 }}>Buat Akun Baru</h1>
+        <p style={{ fontSize: 14, color: T.n600 }}>Bergabung dengan jutaan pengguna Arkademi</p>
+      </div>
+
+      {step === 2 ? (
+        <div style={{ textAlign: 'center', padding: '20px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+          <div style={{ width: 64, height: 64, borderRadius: '50%', background: T.successBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <i className="fi fi-rr-envelope-check" style={{ fontSize: 28, color: T.success }} />
+          </div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: T.n900 }}>Daftar Berhasil!</div>
+          <div style={{ fontSize: 13, color: T.n600, lineHeight: 1.6 }}>
+            Email verifikasi telah dikirim ke<br/><strong style={{ color: T.primary }}>{form.email}</strong>
+          </div>
+          <button onClick={onSwitch} style={{
+            marginTop: 8, padding: '10px 24px', borderRadius: 8, background: T.primary,
+            color: '#fff', fontWeight: 600, fontSize: 14, border: 'none',
+          }}>Masuk Sekarang</button>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <Field label="Nama Lengkap" placeholder="Budi Santoso" icon="user"
+              value={form.name} onChange={e => set('name', e.target.value)} error={errors.name} />
+            <Field label="Perusahaan (opsional)" placeholder="PT Arkademi" icon="building"
+              value={form.company} onChange={e => set('company', e.target.value)} />
+          </div>
+          <Field label="Email" type="email" placeholder="email@perusahaan.com" icon="envelope"
+            value={form.email} onChange={e => set('email', e.target.value)} error={errors.email} />
+          <div>
+            <Field label="Password" type="password" placeholder="Min. 8 karakter" icon="lock"
+              value={form.pass} onChange={e => set('pass', e.target.value)} error={errors.pass} />
+            {form.pass && (
+              <div style={{ marginTop: 6, display: 'flex', gap: 4, alignItems: 'center' }}>
+                {[1,2,3,4].map(i => (
+                  <div key={i} style={{ flex: 1, height: 3, borderRadius: 9999, background: i <= passStrength ? strengthColor[passStrength] : T.n300, transition: 'background 200ms' }} />
+                ))}
+                <span style={{ fontSize: 11, color: strengthColor[passStrength], fontWeight: 600, marginLeft: 6, width: 36 }}>{strengthLabel[passStrength]}</span>
+              </div>
+            )}
+          </div>
+          <Field label="Konfirmasi Password" type="password" placeholder="Ulangi password" icon="lock"
+            value={form.confirm} onChange={e => set('confirm', e.target.value)} error={errors.confirm} />
+
+          <label style={{ display: 'flex', gap: 9, alignItems: 'flex-start', cursor: 'pointer', marginTop: 2 }}>
+            <input type="checkbox" checked={form.agree} onChange={e => set('agree', e.target.checked)}
+              style={{ marginTop: 2, accentColor: T.primary, width: 15, height: 15, flexShrink: 0 }} />
+            <span style={{ fontSize: 12, color: T.n700, lineHeight: 1.5 }}>
+              Saya menyetujui{' '}
+              <span style={{ color: T.primary, fontWeight: 500 }}>Syarat & Ketentuan</span>
+              {' '}dan{' '}
+              <span style={{ color: T.primary, fontWeight: 500 }}>Kebijakan Privasi</span>
+              {' '}Arkademi
+            </span>
+          </label>
+          {errors.agree && <span style={{ fontSize: 12, color: T.error, marginTop: -8 }}>{errors.agree}</span>}
+
+          <button type="submit" disabled={loading} style={{
+            height: 46, borderRadius: 8, background: loading ? T.n400 : T.primary,
+            color: '#fff', fontSize: 15, fontWeight: 600, border: 'none',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            transition: 'background 150ms', marginTop: 4,
+          }}>
+            {loading ? <><i className="fi fi-rr-spinner" style={{ fontSize: 16, animation: 'spin 1s linear infinite' }} /> Memproses…</> : 'Buat Akun'}
+          </button>
+
+          <div style={{ textAlign: 'center', fontSize: 13, color: T.n600 }}>
+            Sudah punya akun?{' '}
+            <span onClick={onSwitch} style={{ color: T.primary, fontWeight: 600, cursor: 'pointer' }}>Masuk di sini</span>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+};
+
+// ── App ────────────────────────────────────────────────────────────
+function App() {
+  const [page, setPage] = useState(() => localStorage.getItem('auth_page') || 'login');
+  const go = p => { setPage(p); localStorage.setItem('auth_page', p); };
+
+  return (
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      <style>{`@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }`}</style>
+
+      {/* Left decorative panel */}
+      <LeftPanel />
+
+      {/* Right form panel */}
+      <div style={{
+        width: 480, flexShrink: 0, background: T.white, display: 'flex', flexDirection: 'column',
+        justifyContent: 'center', padding: '40px 48px', overflowY: 'auto',
+        borderLeft: `1px solid ${T.n300}`,
+      }}>
+        {/* Tab switcher */}
+        <div style={{ display: 'flex', background: T.n100, borderRadius: 10, padding: 4, marginBottom: 32 }}>
+          {[['login', 'Masuk'], ['register', 'Daftar']].map(([k, l]) => (
+            <button key={k} onClick={() => go(k)} style={{
+              flex: 1, height: 36, borderRadius: 7, border: 'none', fontSize: 13, fontWeight: 600,
+              background: page === k ? T.white : 'transparent',
+              color: page === k ? T.n900 : T.n600,
+              boxShadow: page === k ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+              transition: 'all 150ms',
+            }}>{l}</button>
+          ))}
+        </div>
+
+        {page === 'login'
+          ? <LoginPage    onSwitch={() => go('register')} />
+          : <RegisterPage onSwitch={() => go('login')} />
+        }
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
