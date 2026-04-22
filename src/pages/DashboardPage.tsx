@@ -110,6 +110,9 @@ export function DashboardPage() {
       {/* World Clock */}
       <WorldClock />
 
+      {/* Weather Widget */}
+      <WeatherWidget />
+
       {/* Recent transactions */}
       <div style={{ background: '#fff', borderRadius: 16, padding: '22px 24px', boxShadow: '0 1px 3px rgba(15,23,42,0.06)', border: '1px solid #E2E8F0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
@@ -201,6 +204,172 @@ function BarChart({ data }: { data: { label: string; val: number; color: string 
           </div>
         </div>
       ))}
+    </div>
+  )
+}
+
+// ─── WEATHER WIDGET ───────────────────────────────────────────────────────────
+const WEATHER_CITIES = [
+  { city: 'Jakarta',   flag: '🇮🇩', lat: -6.2088,  lon: 106.8456, tz: 'Asia/Jakarta'     },
+  { city: 'New York',  flag: '🇺🇸', lat: 40.7128,  lon: -74.006,  tz: 'America/New_York' },
+  { city: 'London',    flag: '🇬🇧', lat: 51.5074,  lon: -0.1278,  tz: 'Europe/London'    },
+  { city: 'Hong Kong', flag: '🇭🇰', lat: 22.3193,  lon: 114.1694, tz: 'Asia/Hong_Kong'   },
+]
+
+const WMO: Record<number, { label: string; icon: string }> = {
+  0:  { label: 'Cerah',         icon: '☀️' },
+  1:  { label: 'Hampir Cerah',  icon: '🌤️' },
+  2:  { label: 'Berawan',       icon: '⛅' },
+  3:  { label: 'Mendung',       icon: '☁️' },
+  45: { label: 'Berkabut',      icon: '🌫️' },
+  48: { label: 'Berkabut',      icon: '🌫️' },
+  51: { label: 'Gerimis',       icon: '🌦️' },
+  53: { label: 'Gerimis',       icon: '🌦️' },
+  55: { label: 'Gerimis Lebat', icon: '🌧️' },
+  61: { label: 'Hujan',         icon: '🌧️' },
+  63: { label: 'Hujan Lebat',   icon: '🌧️' },
+  65: { label: 'Hujan Deras',   icon: '🌧️' },
+  71: { label: 'Salju',         icon: '🌨️' },
+  73: { label: 'Salju Lebat',   icon: '❄️' },
+  80: { label: 'Hujan Lokal',   icon: '🌦️' },
+  81: { label: 'Hujan Lokal',   icon: '🌧️' },
+  95: { label: 'Petir',         icon: '⛈️' },
+  99: { label: 'Petir Lebat',   icon: '⛈️' },
+}
+
+type WeatherData = {
+  temperature_2m: number
+  apparent_temperature: number
+  weather_code: number
+  wind_speed_10m: number
+  relative_humidity_2m: number
+} | null
+
+function getWmo(code: number) {
+  return WMO[code] ?? WMO[Math.floor(code / 10) * 10] ?? { label: '—', icon: '🌡️' }
+}
+
+function WeatherSkeleton() {
+  return (
+    <div style={{ borderRadius: 12, border: '1px solid #E2E8F0', padding: 16, background: '#FAFBFF' }}>
+      <div style={{ height: 14, width: '60%', borderRadius: 6, background: 'linear-gradient(90deg,#E2E8F0 25%,#F1F5F9 50%,#E2E8F0 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite', marginBottom: 10 }} />
+      <div style={{ height: 36, width: 50, borderRadius: 6, background: 'linear-gradient(90deg,#E2E8F0 25%,#F1F5F9 50%,#E2E8F0 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite', marginBottom: 10 }} />
+      <div style={{ height: 12, width: '80%', borderRadius: 6, background: 'linear-gradient(90deg,#E2E8F0 25%,#F1F5F9 50%,#E2E8F0 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite', marginBottom: 8 }} />
+      <div style={{ height: 10, width: '70%', borderRadius: 6, background: 'linear-gradient(90deg,#E2E8F0 25%,#F1F5F9 50%,#E2E8F0 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite' }} />
+    </div>
+  )
+}
+
+function WeatherWidget() {
+  const [data, setData] = useState<Record<string, WeatherData>>({})
+  const [loading, setLoading] = useState(true)
+  const [spinning, setSpinning] = useState(false)
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
+
+  const fetchAll = async () => {
+    setLoading(true)
+    setSpinning(true)
+    const results: Record<string, WeatherData> = {}
+    await Promise.all(
+      WEATHER_CITIES.map(async ({ city, lat, lon, tz }) => {
+        try {
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,relative_humidity_2m&timezone=${encodeURIComponent(tz)}&forecast_days=1`
+          const res = await fetch(url)
+          const json = await res.json()
+          results[city] = json.current ?? null
+        } catch {
+          results[city] = null
+        }
+      })
+    )
+    setData(results)
+    setLastUpdate(new Date())
+    setLoading(false)
+    setSpinning(false)
+  }
+
+  useEffect(() => { fetchAll() }, [])
+
+  return (
+    <div style={{ background: '#fff', borderRadius: 16, padding: '18px 24px', boxShadow: '0 1px 3px rgba(15,23,42,0.06)', border: '1px solid #E2E8F0', marginBottom: 20 }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <i className="fi fi-rr-cloud" style={{ fontSize: 15, color: '#2563EB', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }} />
+          <span style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>Cuaca Sekarang</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {lastUpdate && (
+            <span style={{ fontSize: 11, color: '#94A3B8' }}>
+              Update {lastUpdate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          )}
+          <button
+            onClick={fetchAll}
+            disabled={loading}
+            style={{ background: 'none', border: '1px solid #E2E8F0', borderRadius: 6, padding: '4px 10px', fontSize: 11, fontWeight: 600, color: '#64748B', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 5, opacity: loading ? 0.6 : 1 }}
+          >
+            <i className="fi fi-rr-refresh" style={{ fontSize: 11, lineHeight: 1, display: 'inline-flex', alignItems: 'center', animation: spinning ? 'spin 0.8s linear infinite' : 'none' }} />
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      {/* Cards grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+        {loading
+          ? WEATHER_CITIES.map(c => <WeatherSkeleton key={c.city} />)
+          : WEATHER_CITIES.map(({ city, flag }) => {
+              const d = data[city]
+              const w = d ? getWmo(d.weather_code) : null
+              const temp = d ? Math.round(d.temperature_2m) : null
+              const feels = d ? Math.round(d.apparent_temperature) : null
+              const humidity = d ? d.relative_humidity_2m : null
+              const wind = d ? Math.round(d.wind_speed_10m) : null
+              const isHot = temp !== null && temp >= 30
+              const isCold = temp !== null && temp < 10
+              const bg = isHot ? '#FFFBEB' : isCold ? '#EFF6FF' : '#F8FAFC'
+              const border = isHot ? '#FDE68A' : isCold ? '#BFDBFE' : '#E2E8F0'
+
+              return (
+                <div key={city} style={{ background: bg, borderRadius: 12, border: `1px solid ${border}`, padding: 16, transition: 'all 300ms' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                    <span style={{ fontSize: 15 }}>{flag}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#0F172A' }}>{city}</span>
+                  </div>
+                  {d && w ? (
+                    <>
+                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, marginBottom: 8 }}>
+                        <span style={{ fontSize: 36 }}>{w.icon}</span>
+                        <div>
+                          <div style={{ fontSize: 26, fontWeight: 800, color: '#0F172A', letterSpacing: '-1px', lineHeight: 1 }}>{temp}°C</div>
+                          <div style={{ fontSize: 10, color: '#94A3B8', marginTop: 2 }}>Terasa {feels}°C</div>
+                        </div>
+                      </div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#334155', marginBottom: 8 }}>{w.label}</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#64748B' }}>
+                          <i className="fi fi-rr-wind" style={{ fontSize: 11, color: '#94A3B8', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }} />
+                          Angin {wind} km/j
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#64748B' }}>
+                          <i className="fi fi-rr-humidity" style={{ fontSize: 11, color: '#94A3B8', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }} />
+                          Kelembaban {humidity}%
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div style={{ padding: '16px 0', textAlign: 'center' }}>
+                      <div style={{ fontSize: 20 }}>⚠️</div>
+                      <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 4 }}>Gagal memuat</div>
+                    </div>
+                  )}
+                </div>
+              )
+            })
+        }
+      </div>
+      <style>{`@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }`}</style>
     </div>
   )
 }
