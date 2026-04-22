@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Upload } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Avatar } from '../components/ui/Avatar'
 import { useTeam } from '../context/TeamContext'
@@ -153,7 +152,7 @@ export function ExpenseFormPage() {
           </h1>
           <p style={{ fontSize: 13, color: '#64748B', marginTop: 3 }}>Isi detail pengeluaran tim</p>
         </div>
-        <Button variant="secondary" Icon={ArrowLeft} onClick={() => navigate('/expenses')}>Kembali</Button>
+        <Button variant="secondary" icon="arrow-left" onClick={() => navigate('/expenses')}>Kembali</Button>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -252,7 +251,7 @@ export function ExpenseFormPage() {
               onMouseEnter={e => e.currentTarget.style.borderColor = '#2563EB'}
               onMouseLeave={e => e.currentTarget.style.borderColor = form.attachment_url ? '#16A34A' : '#CBD5E1'}
             >
-              <Upload size={20} color="#94A3B8" style={{ display: 'block', margin: '0 auto 6px' }} />
+              <i className="fi fi-rr-upload" style={{ fontSize: 20, color: '#94A3B8', display: 'block', margin: '0 auto 6px', lineHeight: 1, textAlign: 'center' }} />
               <div style={{ fontSize: 13, color: '#64748B', fontWeight: 500 }}>
                 {uploading ? 'Mengupload…' : form.attachment_url ? '✓ File terupload' : 'Klik untuk upload nota / struk'}
               </div>

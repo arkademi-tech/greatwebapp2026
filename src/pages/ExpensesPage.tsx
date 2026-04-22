@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Search, RefreshCw, Pencil, Trash2, Receipt } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
 import { Avatar } from '../components/ui/Avatar'
@@ -61,15 +60,15 @@ export function ExpensesPage() {
           <p style={{ fontSize: 13, color: '#64748B', marginTop: 3 }}>{expenses.length} total transaksi tim</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <Button variant="secondary" size="sm" Icon={RefreshCw} onClick={reload}>Refresh</Button>
-          <Button Icon={Plus} onClick={() => navigate('/expenses/new')}>Tambah Baru</Button>
+          <Button variant="secondary" size="sm" icon="refresh" onClick={reload}>Refresh</Button>
+          <Button icon="plus" onClick={() => navigate('/expenses/new')}>Tambah Baru</Button>
         </div>
       </div>
 
       {/* Filters */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
         <div style={{ position: 'relative', flex: '1 1 220px', maxWidth: 320 }}>
-          <Search size={14} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: '#94A3B8', pointerEvents: 'none' }} />
+          <i className="fi fi-rr-search" style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', fontSize: 14, color: '#94A3B8', pointerEvents: 'none', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }} />
           <input value={q} onChange={e => { setQ(e.target.value); setPage(1) }}
             placeholder="Cari pengeluaran…"
             style={{ width: '100%', height: 38, borderRadius: 8, border: '1px solid #CBD5E1', background: '#fff', paddingLeft: 34, paddingRight: 12, fontSize: 13, color: '#0F172A', fontFamily: 'inherit', outline: 'none' }} />
@@ -96,7 +95,7 @@ export function ExpensesPage() {
       {loading ? <SkeletonTable /> : rows.length === 0 ? (
         <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #E2E8F0', padding: '64px 24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
           <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Receipt size={28} color="#2563EB" />
+            <i className="fi fi-rr-receipt" style={{ fontSize: 28, color: '#2563EB', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }} />
           </div>
           <div style={{ fontSize: 16, fontWeight: 700, color: '#0F172A' }}>Tidak ada pengeluaran</div>
           <div style={{ fontSize: 13, color: '#64748B', maxWidth: 300 }}>
@@ -106,7 +105,7 @@ export function ExpensesPage() {
           </div>
           {q || catFilter !== 'Semua' || statusFilter !== 'Semua'
             ? <Button variant="secondary" size="sm" onClick={resetFilters}>Reset Filter</Button>
-            : <Button Icon={Plus} size="sm" onClick={() => navigate('/expenses/new')}>Tambah Pengeluaran</Button>}
+            : <Button icon="plus" size="sm" onClick={() => navigate('/expenses/new')}>Tambah Pengeluaran</Button>}
         </div>
       ) : (
         <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #E2E8F0', overflow: 'hidden', boxShadow: '0 1px 3px rgba(15,23,42,0.06)' }}>
@@ -143,8 +142,8 @@ export function ExpensesPage() {
                   </button>
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  <Button size="sm" variant="secondary" Icon={Pencil} onClick={() => navigate(`/expenses/${e.id}/edit`)} />
-                  <Button size="sm" variant="danger" Icon={Trash2} onClick={() => setDeleteTarget(e.id)} />
+                  <Button size="sm" variant="secondary" icon="pencil" onClick={() => navigate(`/expenses/${e.id}/edit`)} />
+                  <Button size="sm" variant="danger" icon="trash" onClick={() => setDeleteTarget(e.id)} />
                 </div>
               </div>
             )

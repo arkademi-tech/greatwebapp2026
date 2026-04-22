@@ -9,6 +9,8 @@ interface Props {
   size?: Size
   Icon?: LucideIcon
   iconRight?: LucideIcon
+  icon?: string        // flaticon name e.g. "plus", "pencil", "trash"
+  iconRightStr?: string
   onClick?: () => void
   disabled?: boolean
   full?: boolean
@@ -32,7 +34,8 @@ const variants: Record<Variant, React.CSSProperties> = {
 
 export function Button({
   children, variant = 'primary', size = 'md',
-  Icon, iconRight: IconRight, onClick, disabled, full, type = 'button', className,
+  Icon, iconRight: IconRight, icon, iconRightStr,
+  onClick, disabled, full, type = 'button', className,
 }: Props) {
   const s = sz[size]
   return (
@@ -53,8 +56,10 @@ export function Button({
         ...variants[variant],
       }}
     >
+      {icon && <i className={`fi fi-rr-${icon}`} style={{ fontSize: s.fs + 1, lineHeight: 1, display: 'inline-flex', alignItems: 'center' }} />}
       {Icon && <Icon size={s.fs + 1} />}
       {children}
+      {iconRightStr && <i className={`fi fi-rr-${iconRightStr}`} style={{ fontSize: s.fs + 1, lineHeight: 1, display: 'inline-flex', alignItems: 'center' }} />}
       {IconRight && <IconRight size={s.fs + 1} />}
     </button>
   )

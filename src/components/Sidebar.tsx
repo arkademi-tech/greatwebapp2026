@@ -1,13 +1,12 @@
-import { LayoutDashboard, Receipt, Plus, PieChart, LogOut, Link } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { Avatar } from './ui/Avatar'
 import type { Team, Member } from '../types/database'
 
 const NAV = [
-  { to: '/',           Icon: LayoutDashboard, label: 'Dashboard'     },
-  { to: '/expenses',   Icon: Receipt,         label: 'Pengeluaran'   },
-  { to: '/expenses/new', Icon: Plus,          label: 'Tambah Baru'   },
-  { to: '/settlement', Icon: PieChart,        label: 'Rekap & Hutang'},
+  { to: '/',             icon: 'home',      label: 'Dashboard'      },
+  { to: '/expenses',     icon: 'receipt',   label: 'Pengeluaran'    },
+  { to: '/expenses/new', icon: 'plus',      label: 'Tambah Baru'    },
+  { to: '/settlement',   icon: 'chart-pie', label: 'Rekap & Hutang' },
 ]
 
 interface Props {
@@ -33,7 +32,7 @@ export function Sidebar({ team, members, currentMemberId, onLogout }: Props) {
       {/* Logo */}
       <div style={{ padding: '22px 12px 20px', display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{ width: 34, height: 34, borderRadius: 10, background: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontSize: 18, color: '#fff', fontWeight: 800 }}>S</span>
+          <i className="fi fi-rr-split" style={{ fontSize: 16, color: '#fff', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }} />
         </div>
         <div>
           <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', letterSpacing: '-.3px' }}>SplitMate</div>
@@ -61,13 +60,13 @@ export function Sidebar({ team, members, currentMemberId, onLogout }: Props) {
             borderRadius: 6, padding: '4px 8px', cursor: 'pointer', color: '#94A3B8', fontSize: 11, fontWeight: 500,
           }}
         >
-          <Link size={11} /> Salin Link Tim
+          <i className="fi fi-rr-link" style={{ fontSize: 11, lineHeight: 1, display: 'inline-flex', alignItems: 'center' }} /> Salin Link Tim
         </button>
       </div>
 
       {/* Nav */}
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
-        {NAV.map(({ to, Icon, label }) => (
+        {NAV.map(({ to, icon, label }) => (
           <NavLink
             key={to}
             to={to}
@@ -84,7 +83,7 @@ export function Sidebar({ team, members, currentMemberId, onLogout }: Props) {
           >
             {({ isActive }) => (
               <>
-                <Icon size={16} color={isActive ? '#2563EB' : '#64748B'} />
+                <i className={`fi fi-rr-${icon}`} style={{ fontSize: 16, color: isActive ? '#2563EB' : '#64748B', flexShrink: 0, lineHeight: 1, display: 'inline-flex', alignItems: 'center' }} />
                 {label}
               </>
             )}
@@ -100,7 +99,7 @@ export function Sidebar({ team, members, currentMemberId, onLogout }: Props) {
           <div style={{ fontSize: 10, color: '#64748B' }}>Anggota</div>
         </div>
         <button onClick={onLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }} title="Keluar">
-          <LogOut size={14} />
+          <i className="fi fi-rr-sign-out-alt" style={{ fontSize: 14, lineHeight: 1, display: 'inline-flex', alignItems: 'center' }} />
         </button>
       </div>
     </aside>
@@ -115,7 +114,7 @@ export function BottomNav() {
       background: '#0F172A', display: 'flex', zIndex: 100,
       borderTop: '1px solid #334155',
     }}>
-      {NAV.map(({ to, Icon, label }) => (
+      {NAV.map(({ to, icon, label }) => (
         <NavLink
           key={to}
           to={to}
@@ -127,8 +126,12 @@ export function BottomNav() {
             transition: 'color 150ms',
           })}
         >
-          <Icon size={18} />
-          <span style={{ fontSize: 10, fontWeight: 600 }}>{label}</span>
+          {({ isActive }) => (
+            <>
+              <i className={`fi fi-rr-${icon}`} style={{ fontSize: 18, lineHeight: 1, display: 'inline-flex', alignItems: 'center', color: isActive ? '#2563EB' : '#94A3B8' }} />
+              <span style={{ fontSize: 10, fontWeight: 600 }}>{label}</span>
+            </>
+          )}
         </NavLink>
       ))}
     </nav>

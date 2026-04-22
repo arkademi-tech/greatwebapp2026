@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Coins, CheckCircle, Clock, User, Plus, ArrowRight } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
 import { Avatar } from '../components/ui/Avatar'
@@ -55,7 +54,7 @@ export function DashboardPage() {
           <h1 style={{ fontSize: 22, fontWeight: 800, color: '#0F172A', letterSpacing: '-.5px' }}>Dashboard</h1>
           <p style={{ fontSize: 13, color: '#64748B', marginTop: 3 }}>Ringkasan keuangan tim — {periodLabel(period)}</p>
         </div>
-        <Button Icon={Plus} onClick={() => navigate('/expenses/new')}>Tambah Pengeluaran</Button>
+        <Button icon="plus" onClick={() => navigate('/expenses/new')}>Tambah Pengeluaran</Button>
       </div>
 
       {/* Stat cards */}
@@ -65,10 +64,10 @@ export function DashboardPage() {
         </div>
       ) : (
         <div style={{ display: 'flex', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
-          <StatCard label="Total Pengeluaran" value={fmt(total)} sub={`${monthExpenses.length} transaksi`} Icon={Coins} color="#2563EB" />
-          <StatCard label="Sudah Lunas" value={fmt(lunas)} sub={`${monthExpenses.filter(e => e.is_settled).length} item`} Icon={CheckCircle} color="#16A34A" />
-          <StatCard label="Belum Lunas" value={fmt(belum)} sub={`${monthExpenses.filter(e => !e.is_settled).length} item menunggu`} Icon={Clock} color="#DC2626" />
-          <StatCard label="Rata-rata/Orang" value={fmt(avgPerMember)} sub="bulan ini" Icon={User} color="#D97706" />
+          <StatCard label="Total Pengeluaran" value={fmt(total)} sub={`${monthExpenses.length} transaksi`} icon="coins" color="#2563EB" trend={12} />
+          <StatCard label="Sudah Lunas" value={fmt(lunas)} sub={`${monthExpenses.filter(e => e.is_settled).length} item`} icon="check-circle" color="#16A34A" />
+          <StatCard label="Belum Lunas" value={fmt(belum)} sub={`${monthExpenses.filter(e => !e.is_settled).length} item menunggu`} icon="clock" color="#DC2626" />
+          <StatCard label="Rata-rata/Orang" value={fmt(avgPerMember)} sub="bulan ini" icon="user" color="#D97706" />
         </div>
       )}
 
@@ -112,7 +111,7 @@ export function DashboardPage() {
       <div style={{ background: '#fff', borderRadius: 16, padding: '22px 24px', boxShadow: '0 1px 3px rgba(15,23,42,0.06)', border: '1px solid #E2E8F0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>Transaksi Terbaru</div>
-          <Button variant="ghost" size="sm" iconRight={ArrowRight} onClick={() => navigate('/expenses')}>Lihat semua</Button>
+          <Button variant="ghost" size="sm" iconRightStr="arrow-right" onClick={() => navigate('/expenses')}>Lihat semua</Button>
         </div>
         {recent.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '24px 0', color: '#94A3B8', fontSize: 13 }}>Belum ada transaksi bulan ini</div>
@@ -128,7 +127,7 @@ export function DashboardPage() {
                   borderBottom: idx < recent.length - 1 ? '1px solid #F1F5F9' : 'none',
                 }}>
                   <div style={{ width: 38, height: 38, borderRadius: 10, background: color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Coins size={15} color={color} />
+                    <i className="fi fi-rr-receipt" style={{ fontSize: 15, color, lineHeight: 1, display: 'inline-flex', alignItems: 'center' }} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.description}</div>
@@ -151,20 +150,26 @@ export function DashboardPage() {
   )
 }
 
-function StatCard({ label, value, sub, Icon, color }: {
+function StatCard({ label, value, sub, icon, color, trend }: {
   label: string; value: string; sub: string
-  Icon: React.ComponentType<{ size: number; color: string }>; color: string
+  icon: string; color: string; trend?: number
 }) {
   return (
     <div style={{ background: '#fff', borderRadius: 16, padding: '20px 22px', boxShadow: '0 1px 3px rgba(15,23,42,0.06)', border: '1px solid #E2E8F0', flex: 1, minWidth: 160 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '.04em' }}>{label}</div>
         <div style={{ width: 36, height: 36, borderRadius: 10, background: color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Icon size={16} color={color} />
+          <i className={`fi fi-rr-${icon}`} style={{ fontSize: 16, color, lineHeight: 1, display: 'inline-flex', alignItems: 'center' }} />
         </div>
       </div>
       <div style={{ fontSize: 24, fontWeight: 800, color: '#0F172A', letterSpacing: '-.5px', marginBottom: 4 }}>{value}</div>
       <div style={{ fontSize: 12, color: '#94A3B8' }}>{sub}</div>
+      {trend !== undefined && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 6 }}>
+          <i className={`fi fi-rr-arrow-small-${trend > 0 ? 'up' : 'down'}`} style={{ fontSize: 12, color: trend > 0 ? '#16A34A' : '#DC2626', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: trend > 0 ? '#16A34A' : '#DC2626' }}>{Math.abs(trend)}% bulan ini</span>
+        </div>
+      )}
     </div>
   )
 }
