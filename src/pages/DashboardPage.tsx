@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
@@ -107,6 +107,9 @@ export function DashboardPage() {
         </div>
       </div>
 
+      {/* World Clock */}
+      <WorldClock />
+
       {/* Recent transactions */}
       <div style={{ background: '#fff', borderRadius: 16, padding: '22px 24px', boxShadow: '0 1px 3px rgba(15,23,42,0.06)', border: '1px solid #E2E8F0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
@@ -201,3 +204,106 @@ function BarChart({ data }: { data: { label: string; val: number; color: string 
     </div>
   )
 }
+
+// ─── WORLD CLOCK ──────────────────────────────────────────────────────────────
+const CITIES = [
+  { name: 'Jakarta',   flag: '🇮🇩', tz: 'Asia/Jakarta'        },
+  { name: 'New York',  flag: '🇺🇸', tz: 'America/New_York'    },
+  { name: 'London',    flag: '🇬🇧', tz: 'Europe/London'       },
+  { name: 'Hong Kong', flag: '🇭🇰', tz: 'Asia/Hong_Kong'      },
+]
+
+
+function getCityTime(tz: string) {
+  const now = new Date()
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false,
+    weekday: 'short', day: 'numeric', month: 'short',
+  }).formatToParts(now)
+
+  const get = (t: string) => parts.find(p => p.type === t)?.value ?? ''
+  const h = parseInt(get('hour'))
+  const m = get('minute')
+  const s = get('second')
+  const day = now.toLocaleDateString('en-US', { timeZone: tz, weekday: 'short' })
+  const date = now.toLocaleDateString('en-US', { timeZone: tz, day: 'numeric', month: 'short' })
+
+  const dayMap: Record<string, string> = { Sun:'Min', Mon:'Sen', Tue:'Sel', Wed:'Rab', Thu:'Kam', Fri:'Jum', Sat:'Sab' }
+  const monMap: Record<string, string> = { Jan:'Jan', Feb:'Feb', Mar:'Mar', Apr:'Apr', May:'Mei', Jun:'Jun', Jul:'Jul', Aug:'Agu', Sep:'Sep', Oct:'Okt', Nov:'Nov', Dec:'Des' }
+
+  const [, monRaw, dayNum] = date.match(/(\w+)\s+(\d+)/) ?? []
+  const idDay = dayMap[day] ?? day
+  const idMon = monMap[monRaw] ?? monRaw
+
+  const isSiang = h >= 6 && h < 18
+  const timeStr = `${String(h).padStart(2,'0')}.${m}.${s}`
+
+  return { time: timeStr, date: `${idDay}, ${dayNum} ${idMon}`, isSiang }
+}
+
+function WorldClock() {
+  const [, setTick] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 1000)
+    return () => clearInterval(id)
+  }, [])
+
+  return (
+    <div style={{ background: '#fff', borderRadius: 16, padding: '22px 24px', boxShadow: '0 1px 3px rgba(15,23,42,0.06)', border: '1px solid #E2E8F0', marginBottom: 20 }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <i className="fi fi-rr-globe" style={{ fontSize: 16, color: '#2563EB', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }} />
+          <span style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>Jam Dunia</span>
+        </div>
+        <span style={{ fontSize: 12, color: '#94A3B8' }}>Update tiap detik</span>
+      </div>
+
+      {/* City cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+        {CITIES.map(city => {
+          const { time, date, isSiang } = getCityTime(city.tz)
+          const dark = !isSiang
+          return (
+            <div key={city.name} style={{
+              borderRadius: 12,
+              padding: '16px 18px',
+              background: dark ? '#1E293B' : '#F8FAFC',
+              border: `1px solid ${dark ? '#334155' : '#E2E8F0'}`,
+              transition: 'background 0.5s',
+            }}>
+              {/* City + badge */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 16 }}>{city.flag}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: dark ? '#E2E8F0' : '#0F172A' }}>{city.name}</span>
+                </div>
+                <span style={{
+                  fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99,
+                  background: isSiang ? '#FEF3C7' : '#1E293B',
+                  color: isSiang ? '#D97706' : '#94A3B8',
+                  border: `1px solid ${isSiang ? '#FDE68A' : '#334155'}`,
+                }}>
+                  {isSiang ? '☀️ Siang' : '🌙 Malam'}
+                </span>
+              </div>
+
+              {/* Time */}
+              <div style={{ fontSize: 26, fontWeight: 800, color: dark ? '#fff' : '#0F172A', letterSpacing: '-.5px', marginBottom: 4, fontVariantNumeric: 'tabular-nums' }}>
+                {time}
+              </div>
+
+              {/* Date */}
+              <div style={{ fontSize: 11, color: dark ? '#64748B' : '#94A3B8', fontWeight: 500 }}>
+                {date}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
