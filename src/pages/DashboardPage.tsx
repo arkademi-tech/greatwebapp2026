@@ -6,7 +6,7 @@ import { Avatar } from '../components/ui/Avatar'
 import { SkeletonCard } from '../components/ui/Skeleton'
 import { useTeam } from '../context/TeamContext'
 import { useExpenses } from '../hooks/useExpenses'
-import { fmt, fmtK, fmtDate, periodLabel, currentPeriod } from '../lib/utils'
+import { fmt, fmtK, periodLabel, currentPeriod } from '../lib/utils'
 import { CATEGORY_COLORS } from '../types/database'
 
 export function DashboardPage() {
@@ -33,8 +33,6 @@ export function DashboardPage() {
       .sort((a, b) => b.val - a.val)
       .slice(0, 6)
   }, [monthExpenses])
-
-  const recent = [...monthExpenses].slice(0, 5)
 
   const memberStats = members.map(m => {
     const paid  = monthExpenses.filter(e => e.paid_by === m.id).reduce((s, e) => s + e.amount, 0)
@@ -112,46 +110,6 @@ export function DashboardPage() {
 
       {/* Weather Widget */}
       <WeatherWidget />
-
-      {/* Recent transactions */}
-      <div style={{ background: '#fff', borderRadius: 16, padding: '22px 24px', boxShadow: '0 1px 3px rgba(15,23,42,0.06)', border: '1px solid #E2E8F0' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>Transaksi Terbaru</div>
-          <Button variant="ghost" size="sm" iconRightStr="arrow-right" onClick={() => navigate('/expenses')}>Lihat semua</Button>
-        </div>
-        {recent.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '24px 0', color: '#94A3B8', fontSize: 13 }}>Belum ada transaksi bulan ini</div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-            {recent.map((e, idx) => {
-              const payer = members.find(m => m.id === e.paid_by)
-              const color = (CATEGORY_COLORS as Record<string, string>)[e.category] ?? '#64748B'
-              return (
-                <div key={e.id} style={{
-                  display: 'flex', alignItems: 'center', gap: 14,
-                  padding: '12px 0',
-                  borderBottom: idx < recent.length - 1 ? '1px solid #F1F5F9' : 'none',
-                }}>
-                  <div style={{ width: 38, height: 38, borderRadius: 10, background: color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <i className="fi fi-rr-receipt" style={{ fontSize: 15, color, lineHeight: 1, display: 'inline-flex', alignItems: 'center' }} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.description}</div>
-                    <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 2 }}>
-                      {fmtDate(e.date)} · Dibayar <strong style={{ color: '#64748B' }}>{payer?.name ?? '?'}</strong>
-                    </div>
-                  </div>
-                  <Badge color="grey">{e.category}</Badge>
-                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#0F172A' }}>{fmt(e.amount)}</div>
-                    <Badge color={e.is_settled ? 'green' : 'red'} dot>{e.is_settled ? 'Lunas' : 'Belum'}</Badge>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </div>
     </div>
   )
 }
